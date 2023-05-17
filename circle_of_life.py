@@ -1,4 +1,5 @@
 from animal import Animal
+import os
 
 def print_TODO(todo):
     print(f'<<< NOT IMPLEMENTED: {todo} >>>')
@@ -17,6 +18,7 @@ class CircleOfLife:
         print(f'\tnumber of lions = {len(self.lions)}')
     
     def display(self):
+        #os.system('clear')
         print(f'Clock: {self.timestep}')
         i = 0
         print("    ", end="")
@@ -89,5 +91,5 @@ class CircleOfLife:
             self.display()
 
 if __name__ == '__main__':
-    safari = CircleOfLife(5, 5, 2)
+    safari = CircleOfLife(20, 5, 2)
     safari.run(5)
