@@ -43,6 +43,11 @@ class CircleOfLife:
         #print lines
         i = 1
 
+        for animal in self.zebras:
+            self.grid[animal.y][animal.x] = 'Z'
+        for animal in self.lions:
+            self.grid[animal.y][animal.x] = 'L'
+
         for a in self.grid:
             if i < 10:
                 print(f"{i}  |", end="")
