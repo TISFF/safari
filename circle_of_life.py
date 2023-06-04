@@ -1,24 +1,38 @@
-from animal import Animal
 import os
+import random
+from animal import Empty, Zebra, Lion
+
 
 def print_TODO(todo):
-    print(f'<<< NOT IMPLEMENTED: {todo} >>>')
+    print(f'{todo}')
 
 class CircleOfLife:
     def __init__(self, world_size, num_zebras, num_lions):
-        self.grid = [['.' for _ in range(world_size)]
-                          for _ in range(world_size)]
-        print_TODO('get random empty coordinates')
-        self.zebras = [Animal(0, 0) for _ in range(num_zebras)]
-        self.lions = [Animal(0, 0) for _ in range(num_lions)]
+        self.world_size = world_size
+        self.grid = [[Empty(x, y) for x in range(world_size)]
+                          for y in range(world_size)]
+        zebra_coords, lion_coords = self.get_random_coords(num_zebras, num_lions)
+        for x, y in zebra_coords:
+            self.grid[x][y] = Zebra(x, y)
+        for x, y in lion_coords:
+            self.grid[x][y] = Lion(x, y)
         self.timestep = 0
         print('Welcome to AIE Safari!')
         print(f'\tworld size = {world_size}') 
-        print(f'\tnumber of zebras = {len(self.zebras)}')
-        print(f'\tnumber of lions = {len(self.lions)}')
+        print(f'\tnumber of zebras = {num_zebras}')
+        print(f'\tnumber of lions = {num_lions}')
+    
+    def get_random_coords(self, num_zebras, num_lions):
+        all_coords = [(x, y) for  x in range(self.world_size)
+                       for y in range(self.world_size)]
+        zebra_coords = random.sample(all_coords, num_zebras)
+        all_coords = list(set(all_coords) - set(zebra_coords))
+        lion_coords = random.sample(all_coords, num_lions)
+        return zebra_coords, lion_coords
     
     def display(self):
-        #os.system('clear')
+
+        os.system('clear')
         print(f'Clock: {self.timestep}')
         i = 0
         print("    ", end="")
@@ -45,11 +59,6 @@ class CircleOfLife:
         #print lines
         i = 1
 
-        for animal in self.zebras:
-            self.grid[animal.y][animal.x] = 'Z'
-        for animal in self.lions:
-            self.grid[animal.y][animal.x] = 'L'
-
         for a in self.grid:
             if i < 10:
                 print(f"{i}  |", end="")
@@ -61,26 +70,33 @@ class CircleOfLife:
 
             print("")
             i += 1
+
         key = input('enter [q] to quit:')
         if key == 'q':
             exit()
 
     def step_move(self):
-        print_TODO('step_move()')
-        for zebra in self.zebras:
-            print_TODO('get empty neighbor')
-            direction = 'left'
-            zebra.move(direction)
-        for lion in self.lions:
-            print_TODO('get neighboring zebra')
-            print_TODO('move to zevra if found, else move')
-            print_TODO('get empty neighbor')
-            direction = 'left'
-            lion.move(direction)
+        animals = [animal for line in self.grid for animal in line
+                   if not isinstance(animal, Empty)]
+        for animal in animals:
+            if animal.hp != 0:
+                animal.move(self.grid)
 
     def step_breed(self):
-        print_TODO('step_breed()')
+        animals = [animal for line in self.grid for animal in line
+                   if not isinstance(animal, Empty)
+                   and animal.ready_to_breed()]
+        for animal in animals:
+            animal.breed(self.grid)
     
+    def housekeeping(self):
+        for x, line in enumerate(self.grid):
+            for y, animal in enumerate(line):
+                if animal.hp == 0:
+                    self.grid[x][y] = Empty(x, y)
+                else:
+                    self.grid[x][y].age += 1
+
     def run(self, num_timesteps=100):
         self.display()
         for _ in range(num_timesteps):
@@ -89,7 +105,11 @@ class CircleOfLife:
             self.display()
             self.step_breed()
             self.display()
+            self.housekeeping()
 
 if __name__ == '__main__':
-    safari = CircleOfLife(20, 5, 2)
-    safari.run(5)
+    safari = CircleOfLife(20, 100, 80)
+    safari.display()
+    safari.step_move()
+    safari.step_breed()
+    safari.run()
